@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>BuyList</title>
+  <meta name="description" content="A simple shopping list with prices, quantities and a budget." />
+  <meta name="theme-color" content="#f6f6f4" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="BuyList" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <h1 class="brand">BuyList</h1>
+      <button class="btn btn-ghost btn-sm" id="resetBtn" type="button" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+        Reset
+      </button>
+    </header>
+
+    <!-- Budget summary -->
+    <section class="card summary" aria-live="polite">
+      <div class="summary-top">
+        <div>
+          <p class="label" id="headlineLabel">Remaining</p>
+          <p class="headline" id="headline">$0.00</p>
+        </div>
+        <button class="btn btn-soft btn-sm" id="budgetBtn" type="button" aria-haspopup="dialog">Set budget</button>
+      </div>
+      <div class="meter" id="meter" role="progressbar" aria-label="Budget used" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="meter-fill" id="meterFill"></div>
+      </div>
+      <dl class="stats">
+        <div><dt>Budget</dt><dd id="statBudget">—</dd></div>
+        <div><dt>Total</dt><dd id="statTotal">$0.00</dd></div>
+        <div><dt>Items</dt><dd id="statItems">0</dd></div>
+      </dl>
+    </section>
+
+    <!-- Add item -->
+    <form class="card add" id="addForm" autocomplete="off">
+      <label class="field field-name">
+        <span class="sr-only">Item name</span>
+        <input id="addName" name="name" type="text" placeholder="What do you want to buy?" maxlength="80" enterkeyhint="next" required />
+      </label>
+      <div class="add-row">
+        <label class="field">
+          <span class="field-label">Price</span>
+          <input id="addPrice" name="price" type="text" inputmode="decimal" placeholder="0.00" enterkeyhint="next" />
+        </label>
+        <label class="field field-qty">
+          <span class="field-label">Qty</span>
+          <input id="addQty" name="qty" type="number" inputmode="numeric" min="1" step="1" value="1" enterkeyhint="done" />
+        </label>
+        <button class="btn btn-primary" type="submit">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Add
+        </button>
+      </div>
+    </form>
+
+    <!-- List -->
+    <section aria-label="Shopping list">
+      <ul class="list" id="list"></ul>
+      <div class="empty" id="empty">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6 5 3H2"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>
+        <p>Your list is empty</p>
+        <span>Add something you want to buy above.</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- Edit item -->
+  <dialog class="sheet" id="editDialog" aria-labelledby="editTitle">
+    <form method="dialog" id="editForm" autocomplete="off">
+      <h2 id="editTitle">Edit item</h2>
+      <label class="field">
+        <span class="field-label">Name</span>
+        <input id="editName" type="text" maxlength="80" required />
+      </label>
+      <div class="add-row two">
+        <label class="field">
+          <span class="field-label">Price</span>
+          <input id="editPrice" type="text" inputmode="decimal" placeholder="0.00" />
+        </label>
+        <label class="field">
+          <span class="field-label">Quantity</span>
+          <input id="editQty" type="number" inputmode="numeric" min="1" step="1" />
+        </label>
+      </div>
+      <p class="line-preview" id="editPreview"></p>
+      <div class="sheet-actions">
+        <button class="btn btn-danger-ghost" type="button" id="editDelete">Remove</button>
+        <span class="spacer"></span>
+        <button class="btn btn-ghost" type="button" data-close>Cancel</button>
+        <button class="btn btn-primary" type="submit" value="save">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Budget -->
+  <dialog class="sheet" id="budgetDialog" aria-labelledby="budgetTitle">
+    <form method="dialog" id="budgetForm" autocomplete="off">
+      <h2 id="budgetTitle">Your budget</h2>
+      <p class="muted">Your list total is deducted from this automatically.</p>
+      <div class="add-row two">
+        <label class="field">
+          <span class="field-label">Amount</span>
+          <input id="budgetInput" type="text" inputmode="decimal" placeholder="0.00" />
+        </label>
+        <label class="field">
+          <span class="field-label">Currency</span>
+          <select id="currencySelect">
+            <option value="USD">$ USD</option>
+            <option value="PHP">₱ PHP</option>
+            <option value="EUR">€ EUR</option>
+            <option value="GBP">£ GBP</option>
+            <option value="JPY">¥ JPY</option>
+            <option value="CAD">$ CAD</option>
+            <option value="AUD">$ AUD</option>
+            <option value="INR">₹ INR</option>
+          </select>
+        </label>
+      </div>
+      <div class="sheet-actions">
+        <button class="btn btn-danger-ghost" type="button" id="budgetClear">Clear budget</button>
+        <span class="spacer"></span>
+        <button class="btn btn-ghost" type="button" data-close>Cancel</button>
+        <button class="btn btn-primary" type="submit" value="save">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Reset confirmation -->
+  <dialog class="sheet sheet-alert" id="resetDialog" role="alertdialog" aria-labelledby="resetTitle" aria-describedby="resetDesc">
+    <form method="dialog">
+      <div class="alert-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+      </div>
+      <h2 id="resetTitle">Reset your list?</h2>
+      <p class="muted" id="resetDesc">This removes <strong id="resetCount">all items</strong> from your shopping list. This can't be undone. Your budget stays.</p>
+      <div class="sheet-actions stacked">
+        <button class="btn btn-danger" type="button" id="resetConfirm">Yes, reset list</button>
+        <button class="btn btn-ghost" type="button" data-close autofocus>Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <span id="toastText"></span>
+    <button class="toast-action" id="toastAction" type="button">Undo</button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
