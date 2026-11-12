@@ -5,7 +5,7 @@
   const STORAGE_KEY = "buylist:v1";
 
   // Money is stored in cents (integers) to avoid floating-point drift.
-  const defaultState = () => ({ items: [], budget: null, currency: "USD" });
+  const defaultState = () => ({ items: [], budget: null, currency: "PHP", currencySet: false });
 
   function load() {
     try {
@@ -15,7 +15,9 @@
       return {
         items: Array.isArray(data.items) ? data.items.filter(isValidItem) : [],
         budget: Number.isInteger(data.budget) ? data.budget : null,
-        currency: typeof data.currency === "string" ? data.currency : "USD",
+        // Peso is the default unless a currency was explicitly picked.
+        currency: data.currencySet === true && typeof data.currency === "string" ? data.currency : "PHP",
+        currencySet: data.currencySet === true,
       };
     } catch {
       return defaultState();
@@ -384,6 +386,7 @@
     const value = parseMoney(budgetInput.value);
     if (Number.isNaN(value)) { budgetInput.setAttribute("aria-invalid", "true"); budgetInput.focus(); return; }
     state.budget = value;
+    if (currencySelect.value !== state.currency) state.currencySet = true;
     state.currency = currencySelect.value;
     makeFormatter();
     listEl.replaceChildren(); // currency may have changed → rebuild rows

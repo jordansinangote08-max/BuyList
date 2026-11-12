@@ -11,7 +11,7 @@ A clean, minimalist shopping list that keeps track of what you want to buy, what
 - **Automatic totals**: line totals, list total and item count update instantly
 - **Budget**: set your budget and the list total is deducted from it automatically. The bar turns amber near the limit and red when you go over.
 - **Reset** clears the whole list after you confirm a warning (your budget is kept)
-- **Currency** picker (USD, PHP, EUR, GBP, JPY, CAD, AUD, INR)
+- **Philippine peso (₱)** by default, with a currency picker if you ever need another
 - Saved automatically on your device (localStorage). No account, no server.
 - Works on phone, tablet, laptop and desktop. Supports light and dark mode, iPhone safe areas and reduced motion, and can be added to your home screen.
 
