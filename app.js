@@ -163,7 +163,7 @@
       </button>
       <div class="stepper" role="group">
         <button type="button" data-action="dec">${ICON.minus}</button>
-        <output aria-live="polite"></output>
+        <input class="qty-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" enterkeyhint="done" autocomplete="off" />
         <button type="button" data-action="inc">${ICON.plus}</button>
       </div>
       <span class="item-total"></span>
@@ -186,7 +186,9 @@
       meta.textContent = "Tap to add a price";
       meta.classList.add("no-price");
     }
-    li.querySelector(".stepper output").textContent = String(item.qty);
+    const qtyInput = li.querySelector(".qty-input");
+    if (document.activeElement !== qtyInput) qtyInput.value = String(item.qty);
+    qtyInput.setAttribute("aria-label", `Quantity of ${item.name}`);
     li.querySelector(".item-total").textContent = money(lineTotal(item));
 
     const [dec, inc] = li.querySelectorAll(".stepper button");
@@ -262,6 +264,40 @@
       case "remove":
         removeItem(item.id);
         break;
+    }
+  });
+
+  /* Typing a quantity directly */
+  listEl.addEventListener("focusin", (e) => {
+    if (e.target.classList?.contains("qty-input")) e.target.select();
+  });
+  listEl.addEventListener("input", (e) => {
+    const input = e.target;
+    if (!input.classList?.contains("qty-input")) return;
+    const digits = input.value.replace(/\D/g, "");
+    if (digits !== input.value) input.value = digits;
+  });
+  listEl.addEventListener("keydown", (e) => {
+    const input = e.target;
+    if (!input.classList?.contains("qty-input")) return;
+    if (e.key === "Enter") { e.preventDefault(); input.blur(); }
+    if (e.key === "Escape") {
+      const item = state.items.find((i) => i.id === input.closest(".item").dataset.id);
+      if (item) input.value = String(item.qty);
+      input.blur();
+    }
+  });
+  listEl.addEventListener("focusout", (e) => {
+    const input = e.target;
+    if (!input.classList?.contains("qty-input")) return;
+    const item = state.items.find((i) => i.id === input.closest(".item")?.dataset.id);
+    if (!item) return;
+    const n = parseInt(input.value, 10);
+    if (Number.isFinite(n) && n >= 1 && n !== item.qty) {
+      item.qty = Math.min(n, 9999);
+      commit();
+    } else {
+      input.value = String(item.qty); // empty or 0 → keep the previous quantity
     }
   });
 

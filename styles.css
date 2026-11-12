@@ -367,12 +367,27 @@ svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width:
 .stepper button:active { transform: scale(0.9); }
 .stepper button:disabled { opacity: 0.35; cursor: default; }
 .stepper button svg { width: 16px; height: 16px; }
-.stepper output {
-  min-width: 28px;
+.qty-input {
+  width: 44px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
   text-align: center;
+  font-size: 16px; /* prevents iOS zoom on focus */
   font-weight: 600;
-  font-size: 15px;
   font-variant-numeric: tabular-nums;
+  cursor: text;
+  transition: background-color 150ms ease, box-shadow 150ms ease;
+}
+.qty-input:focus {
+  outline: none;
+  background: var(--surface);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .qty-input:hover:not(:focus) { background: color-mix(in srgb, var(--surface) 60%, transparent); }
 }
 
 .item-actions {
